@@ -69,8 +69,10 @@ Kulcsszó-argumentumok:
 * `p_min`: paraméter minimum értéke
 * `p_max`: paraméter maximum értéke
 * `Δp`: paraméter lépésköz
+* `bif_detect_tol`: bifurkáció detektálás érzékenysége
 * `rootfinding_function`: gyökkereső (opciók: `quasinewton_rootfinding,bisection_rootfinding`)
-* `rootfinding_options`: további gyökkereső opciók
+* `rootfinding_options`: opcionális gyökkereső beállítások
+* `initial_rootfinding_options`: opcionális gyökkereső beállítások a kezdeti paraméterre
 * `ϵ`: paraméter deriváltak közelítéséhez
   
 ## Telepítés
