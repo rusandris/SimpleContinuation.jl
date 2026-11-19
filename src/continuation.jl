@@ -1,6 +1,10 @@
 export continuation
 
-function continuation(f,x0::Real;p_min::Real,p_max::Real,Δp::Float64=1e-2,rootfinding_function=quasinewton_rootfinding,rootfinding_options=(),ϵ=1e-4)
+function continuation(f,x0::Real;p_min::Real,p_max::Real,Δp::Float64=1e-2,
+        ϵ=1e-4,bif_detect_tol = 1e-2,
+        rootfinding_function=quasinewton_rootfinding,
+        rootfinding_options=(),initial_rootfinding_options = ())
+
 	@assert p_min < p_max "p_min should be less than p_max (p_min < p_max) !"
 	
 	#decide if p_min -> p_max or p_max -> p_min
@@ -13,29 +17,39 @@ function continuation(f,x0::Real;p_min::Real,p_max::Real,Δp::Float64=1e-2,rootf
 	end
 	
 	#first try to convergence from x0 to root
-	x = rootfinding_function(f,x0,p_start;rootfinding_options...)
+	x,retcode = rootfinding_function(f,x0,p_start;initial_rootfinding_options...)
 
 	#continuation setup
 	p = p_start
 	xs = Float64[x]
 	ps = Float64[p_start]
-	df_x = df(f,x,p_start,ϵ)
+
+    df_x = df(f,x,p_start,ϵ)
 	init_param_diff = sign(p - p_stop)  
 	
-	abs(df_x) < 1e-2 && error("First guess converged to a fixed point at bifurcation at x = $(x),p = $(p) !")
+	abs(df_x) < bif_detect_tol && error("First guess converged to a fixed point at bifurcation at x = $(x),p = $(p) !")
 	
 	init_stability = sign(df_x)
-
+	    
+    if retcode !=:Success
+        @warn "Could not converge on first try at p =$(p_start), check rootfinding options!"
+        return Branch(xs,get_stability_symbol(Int(init_stability)),p_min,p_max,Δp,ps)
+    end
+    
 	#start continuation
 	while (p - p_stop) * init_param_diff > 0
-		x,df_x = continuation(f,x,p;Δp=Δp,rootfinding_function=rootfinding_function,rootfinding_options=rootfinding_options,ϵ=ϵ)
-		p += Δp
-		if sign(df_x)* init_stability < 0 || abs(df_x) < 1e-2 
-			@warn "Stability change around p = $(ps[end]) !"
+        p += Δp
+		x,df_x,retcode = continuation(f,x,p;Δp=Δp,rootfinding_function=rootfinding_function,rootfinding_options=rootfinding_options,ϵ=ϵ)
+        push!(xs,x)
+		push!(ps,p)
+
+		if sign(df_x)* init_stability < 0 || abs(df_x) < bif_detect_tol 
+			@info "Stability change around p = $(ps[end]) !"
 			break
 		end
-		push!(xs,x)
-		push!(ps,p)
+    
+        retcode !=:Success && break
+
 	end
 	
 	return Branch(xs,get_stability_symbol(Int(init_stability)),p_min,p_max,Δp,ps)
@@ -52,10 +66,10 @@ function continuation(f,x::Real,p::Real;Δp::Float64=1e-2,rootfinding_function=q
 	x_approx = x - df_p/df_x * Δp
 	
 	#iterate until convergence
-	x = rootfinding_function(f,x_approx,p;rootfinding_options...)
+	x,retcode = rootfinding_function(f,x_approx,p;rootfinding_options...)
 	df_x = df(f,x,p,ϵ)
 	
-	return x,df_x
+	return x,df_x,retcode
 
 end
 
