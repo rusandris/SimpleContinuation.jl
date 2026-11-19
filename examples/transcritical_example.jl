@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.30
+# v1.1.0
 
 using Markdown
 using InteractiveUtils
@@ -7,7 +7,8 @@ using InteractiveUtils
 # ╔═╡ 4681fa68-7344-11ee-2173-01442550e41d
 begin
 	using Pkg
-	Pkg.add(url="https://github.com/rusandris/SimpleContinuation.jl.git")
+	#Pkg.add(url="https://github.com/rusandris/SimpleContinuation.jl.git")
+	Pkg.activate("../../")
 end
 
 # ╔═╡ ebf3a3ac-9c02-4ecf-abfc-8b37d88dd942
@@ -46,7 +47,7 @@ end
 # ╔═╡ 446efa6e-bffe-4527-9509-daa94d9f4aaf
 begin
 	x1 = -1.2 #kezdeti becslés
-	br1 = continuation(f,x1;p_min=-1.0,p_max=-0.0001,Δp = 1e-4)
+	br1 = continuation(f,x1;p_min=-1.0,p_max=-0.0001,Δp = 1e-4,bif_detect_tol=1e-3)
 end
 
 # ╔═╡ f79a6dd2-50ba-48dd-8a94-9bccb8e67568

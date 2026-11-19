@@ -1,14 +1,15 @@
 ### A Pluto.jl notebook ###
-# v0.19.30
+# v1.1.0
 
 using Markdown
 using InteractiveUtils
 
 # ╔═╡ 90491098-71c3-11ee-0ec4-69690ca4f719
-using Pkg
-
-# ╔═╡ 8d940696-dbc6-43a9-a803-a1490bb894dc
-Pkg.add(url="https://github.com/rusandris/SimpleContinuation.jl.git")
+begin
+	using Pkg
+	#Pkg.add(url="https://github.com/rusandris/SimpleContinuation.jl.git")
+	Pkg.activate("../../")
+end
 
 # ╔═╡ 0018d2c0-81d2-43fc-93d7-41a27e8d016e
 using SimpleContinuation
@@ -150,7 +151,6 @@ Ez nem más, mint a **(szuperkritikus) vasvilla bifurkáció**!
 
 # ╔═╡ Cell order:
 # ╠═90491098-71c3-11ee-0ec4-69690ca4f719
-# ╠═8d940696-dbc6-43a9-a803-a1490bb894dc
 # ╠═0018d2c0-81d2-43fc-93d7-41a27e8d016e
 # ╟─8f6bfd48-d7f8-450d-bafb-c4e84566cadc
 # ╟─8f722eef-ec8f-4fad-8624-4a647849f960

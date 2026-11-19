@@ -1,5 +1,5 @@
 ### A Pluto.jl notebook ###
-# v0.19.30
+# v1.1.0
 
 using Markdown
 using InteractiveUtils
@@ -7,7 +7,8 @@ using InteractiveUtils
 # ╔═╡ 489e885a-7341-11ee-144f-c12ac1c41912
 begin
 	using Pkg
-	Pkg.add(url="https://github.com/rusandris/SimpleContinuation.jl.git")
+	#Pkg.add(url="https://github.com/rusandris/SimpleContinuation.jl.git")
+	Pkg.activate("../../")
 end
 
 # ╔═╡ 4a87a5a4-75db-432c-9e73-c494a651f43e
@@ -51,24 +52,41 @@ Számítsuk ki először a pozitív fixponthoz tartozó ágat a continuation fü
 # ╔═╡ 3325f49b-5fed-4e59-b1ef-b1d4f8b8b968
 begin
 	x01 = 0.5 #kezdeti becslés
-	br1 = continuation(f,x01;p_min=-0.5,p_max=0.0,Δp = 1e-4)
-	br1.stability
+	br1 = continuation(f,x01;p_min=-0.5,p_max=0.0,Δp = 1e-4) #Newton gyökkeresés, alapértelmezett toleranciák
+	@show br1.stability
 end
 
 # ╔═╡ a8158d83-938d-4c25-82ce-b06870cece77
 plot(br1.p_values,br1.values,framestyle=:origin,linestyle=:dash,lw=3,label=L"x^{*}_1",legend=:topright,legendfontsize=15,xlabel=L"r",ylabel=L"x^{*}",guidefontsize=20)
 
+# ╔═╡ 705920c2-3db8-4018-9de4-8aebaae66439
+md"""
+A `bif_detect_tol` paraméterrel állítható a detektálási tolerancia (milyen közel kerüljünk a bifurkációs ponthoz).
+"""
+
+# ╔═╡ b9270894-cd9c-4add-af48-c254c14e576b
+begin 
+	br12 = continuation(f,0.5;p_min=-0.5,p_max=0.0,Δp = 1e-4,bif_detect_tol=1e-1)
+	@show br12.p_values[end],br12.values[end]
+end
+
 # ╔═╡ 832819d5-0b68-4fb6-a9e7-9e47db4b12d3
 md"""
-Az alapértelmezett gyökkeresési módszer egy közelítő Newton-módszer (`quasinewton_rootfinding`).Az $x=-1$-ben lévő aszimptota miatt ezzel a módszerrel nagyon nehéz megkeresni a negatív fixpont kezdeti helyzetét, ezért a `bisection_rootfinding` módszert fogjuk használni.  
+Az alapértelmezett gyökkeresési módszer egy közelítő Newton-módszer (`quasinewton_rootfinding`). Az $x=-1$-ben lévő aszimptota miatt ezzel a módszerrel nagyon nehéz megkeresni a negatív fixpont kezdeti helyzetét, ezért a felezőmódszert `bisection_rootfinding` fogjuk használni (ezt viszont egy kicsit macerásabb beállítani).  
 """
 
 # ╔═╡ 655a47d3-dcd4-475d-842f-7f782af68064
 begin
-	x02 = -0.2 #kezdeti becslés, itt most nem lényeges
-	options = (a=-0.95,b=-0.1) #a fixpontot tartalmazó intervallum két széle
-	br2 = continuation(f,x02;p_min=-0.5,p_max=0.0,Δp = 1e-4,rootfinding_function=bisection_rootfinding,rootfinding_options=options)
-	br2.stability
+	x02 = -0.5 #kezdeti becslés
+	init_rfoptions = (a=-0.95,b=-0.1,tol=1e-3) #induláskor a fixpontot tartalmazó intervallum két széle
+	rfoptions = (Δ=0.015,tol=1e-3) #indulás után minden új paraméterre a keresés az éppen aktuális becslés körül történik: `a = x - Δ, b + Δ ` 
+	br2 = continuation(f,x02;p_min=-0.5,p_max=0.0,Δp = 1e-4,
+					   rootfinding_function=bisection_rootfinding,
+					   initial_rootfinding_options = init_rfoptions,
+					   rootfinding_options=rfoptions,
+					   bif_detect_tol = 1e-1)
+	#felezőmódszer leáll, ha a gyök túl kis intervallumban kereshető (pl. nyeregpont bifurkációnál, közel a bifurkációhoz)
+	@show br2.stability
 end
 
 # ╔═╡ 182db064-a360-4a93-99d3-119b251e312a
@@ -91,6 +109,8 @@ Ez nem más, mint egy **nyeregpont bifurkáció**!
 # ╟─025d1cff-2ce6-4119-b028-cd21eb61e575
 # ╠═3325f49b-5fed-4e59-b1ef-b1d4f8b8b968
 # ╠═a8158d83-938d-4c25-82ce-b06870cece77
+# ╟─705920c2-3db8-4018-9de4-8aebaae66439
+# ╠═b9270894-cd9c-4add-af48-c254c14e576b
 # ╟─832819d5-0b68-4fb6-a9e7-9e47db4b12d3
 # ╠═655a47d3-dcd4-475d-842f-7f782af68064
 # ╠═182db064-a360-4a93-99d3-119b251e312a
